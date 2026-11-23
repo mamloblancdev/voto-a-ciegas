@@ -113,6 +113,7 @@ footer a{color:var(--accent)}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
+<script data-goatcounter="https://votoaciegas.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </head>
 <body style="margin:0">
 
@@ -317,7 +318,8 @@ function renderVote(){
   for(let v=0;v<4;v++)$("b"+v).classList.toggle("on",S.scores[id]===v);
   $("prevBtn").disabled=S.pos===0;
 }
-function show(view){S.view=view;$("voteView").hidden=view!=="vote";$("kbdHint").hidden=view!=="vote";$("resView").hidden=view!=="res";if(view==="res")renderResults();else renderVote();renderProgress();save()}
+let gcSent=false;function track(){if(gcSent)return;try{if(window.goatcounter&&window.goatcounter.count){window.goatcounter.count({path:"llego-a-resultados",title:"Llegó a resultados",event:true});gcSent=true}}catch(e){}}
+function show(view){if(view==="res")track();S.view=view;$("voteView").hidden=view!=="vote";$("kbdHint").hidden=view!=="vote";$("resView").hidden=view!=="res";if(view==="res")renderResults();else renderVote();renderProgress();save()}
 
 function rate(v){const id=S.order[S.pos];S.scores[id]=v;advance()}
 function advance(){
