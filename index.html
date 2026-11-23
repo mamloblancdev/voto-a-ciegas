@@ -64,6 +64,10 @@ h1{font-family:var(--f-display);font-stretch:75%;font-weight:800;font-size:clamp
 .ghost{font:inherit;font-size:14px;cursor:pointer;background:none;border:1px solid transparent;color:var(--muted);padding:6px 10px;border-radius:4px}
 .ghost:hover{color:var(--ink);border-color:var(--line)}
 .ghost:disabled{opacity:.4;cursor:default}
+.res-cta{display:flex;flex-direction:column;gap:10px}
+.results-btn{font:inherit;font-weight:700;font-size:16px;cursor:pointer;width:100%;background:var(--ink);color:var(--paper);border:0;padding:14px 18px;border-radius:6px;letter-spacing:.01em}
+.results-btn:hover{background:var(--accent)}
+.results-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .primary{font:inherit;font-weight:600;font-size:14px;cursor:pointer;background:var(--accent);color:var(--paper);border:0;padding:8px 14px;border-radius:4px}
 .hint{font-size:13px;color:var(--muted);margin:0}
 kbd{font-family:var(--f-mono);font-size:12px;border:1px solid var(--line);border-bottom-width:2px;border-radius:3px;padding:0 4px;background:var(--paper)}
@@ -158,14 +162,14 @@ footer a{color:var(--accent)}
       <button class="sbtn" data-v="3" id="b3"><span class="n">3</span><span class="l">A favor y muy necesaria</span></button>
     </div>
     <div class="nav">
-      <div class="row">
-        <button class="ghost" id="prevBtn">← Anterior</button>
-        <button class="ghost" id="skipBtn">Saltar</button>
-      </div>
-      <button class="ghost" id="toResBtn">Ver resultados →</button>
+      <button class="ghost" id="prevBtn">← Anterior</button>
+      <button class="ghost" id="skipBtn">Siguiente →</button>
     </div>
   </div>
-  <p class="hint" id="kbdHint">Con teclado: <kbd>0</kbd>–<kbd>3</kbd> para puntuar, <kbd>←</kbd> anterior, <kbd>S</kbd> saltar. Tu progreso se guarda en este navegador.</p>
+  <div id="resCta" class="res-cta">
+    <button class="results-btn" id="toResBtn">Ver resultados</button>
+    <p class="hint" id="kbdHint">Puedes verlos cuando quieras: los que no hayas puntuado no cuentan. Con teclado: <kbd>0</kbd>–<kbd>3</kbd> para puntuar, <kbd>←</kbd> <kbd>→</kbd> para moverte. Tu progreso se guarda en este navegador.</p>
+  </div>
 
   <div id="resView" hidden>
     <section>
@@ -338,7 +342,7 @@ function renderVote(){
   $("prevBtn").disabled=S.pos===0;
 }
 let gcSent=false;function track(){if(gcSent)return;try{if(window.goatcounter&&window.goatcounter.count){window.goatcounter.count({path:"llego-a-resultados",title:"Llegó a resultados",event:true});gcSent=true}}catch(e){}}
-function show(view){if(view==="res")track();S.view=view;$("voteView").hidden=view!=="vote";$("kbdHint").hidden=view!=="vote";$("resView").hidden=view!=="res";if(view==="res")renderResults();else renderVote();renderProgress();save()}
+function show(view){if(view==="res")track();S.view=view;$("voteView").hidden=view!=="vote";$("resCta").hidden=view!=="vote";$("resView").hidden=view!=="res";if(view==="res")renderResults();else renderVote();renderProgress();save()}
 
 function rate(v){const id=S.order[S.pos];S.scores[id]=v;advance()}
 function advance(){
@@ -388,7 +392,7 @@ function renderResults(){
 
 for(let v=0;v<4;v++)$("b"+v).onclick=()=>rate(v);
 $("prevBtn").onclick=()=>{if(S.pos>0){S.pos--;show("vote")}};
-$("skipBtn").onclick=()=>{const id=S.order[S.pos];delete S.scores[id];if(S.pos<N-1){S.pos++;show("vote")}else show("res")};
+$("skipBtn").onclick=()=>{if(S.pos<N-1){S.pos++;show("vote")}else show("res")};
 $("toResBtn").onclick=()=>show("res");
 $("backVoteBtn").onclick=()=>{const f=firstUnrated();if(f>=0)S.pos=f;show("vote")};
 $("resetBtn").onclick=()=>{$("resetConfirm").hidden=false;$("resetBtn").hidden=true};
@@ -397,7 +401,7 @@ $("resetYes").onclick=()=>{S={order:shuffle(PROPS.map(o=>o.id)),scores:{},pos:0,
 document.addEventListener("keydown",e=>{if(S.view!=="vote"||e.metaKey||e.ctrlKey||e.altKey)return;
   if(/^[0-3]$/.test(e.key)){rate(+e.key);e.preventDefault()}
   else if(e.key==="ArrowLeft"){$("prevBtn").click()}
-  else if(e.key==="s"||e.key==="S"){$("skipBtn").click()}});
+  else if(e.key==="ArrowRight"){$("skipBtn").click()}});
 show(S.view==="res"?"res":"vote");
 </script>
 </body>
