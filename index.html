@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tu voto a ciegas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: una columna estrecha tipo papeleta; tarjeta de propuesta + botonera 0-3; resultados debajo en la misma columna */
+:root{
+  --bg:#EEF1F0; --paper:#FBFCFB; --ink:#17212B; --muted:#5C6872; --line:#CDD5D4;
+  --accent:#1E5D73; --accent-soft:#D5E5EA;
+  --s0:#B5482F; --s1:#B98A1E; --s2:#4F8A4A; --s3:#226B3A;
+  --s0-bg:#F6E1DA; --s1-bg:#F5ECD2; --s2-bg:#E1EEDD; --s3-bg:#D2E8D7;
+  --f-display:"Archivo","Arial Narrow",Arial,sans-serif;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1519; --paper:#172027; --ink:#E6ECEE; --muted:#93A1AA; --line:#2C3A42;
+  --accent:#6FB3CB; --accent-soft:#1D3640;
+  --s0:#E3846C; --s1:#DDB55A; --s2:#86C17E; --s3:#5FC27F;
+  --s0-bg:#3A221C; --s1-bg:#372E17; --s2-bg:#1F3220; --s3-bg:#173323;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1519; --paper:#172027; --ink:#E6ECEE; --muted:#93A1AA; --line:#2C3A42;
+  --accent:#6FB3CB; --accent-soft:#1D3640;
+  --s0:#E3846C; --s1:#DDB55A; --s2:#86C17E; --s3:#5FC27F;
+  --s0-bg:#3A221C; --s1-bg:#372E17; --s2-bg:#1F3220; --s3-bg:#173323;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5}
+.wrap{max-width:720px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-stretch:75%;font-weight:800;font-size:clamp(34px,7vw,52px);line-height:1;margin:0;text-wrap:balance;letter-spacing:-.01em}
+.lede{color:var(--muted);margin:0;max-width:60ch}
+.progress{display:flex;align-items:center;gap:12px}
+.bar{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+.count{font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+
+.ballot{background:var(--paper);border:1px solid var(--line);border-radius:4px;box-shadow:0 1px 0 var(--line),0 10px 30px -18px rgba(0,0,0,.35)}
+.ballot-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 20px;border-bottom:1px dashed var(--line);font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ballot-top b{color:var(--accent);font-weight:700}
+.ballot-body{padding:28px 20px 24px;min-height:150px;display:flex;align-items:center}
+.prop{font-family:var(--f-display);font-stretch:92%;font-weight:600;font-size:clamp(21px,3.6vw,27px);line-height:1.25;margin:0;text-wrap:pretty}
+.scores{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 20px 20px}
+.sbtn{font:inherit;cursor:pointer;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:6px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:76px;transition:transform .08s,background .15s,border-color .15s}
+.sbtn .n{font-family:var(--f-mono);font-weight:700;font-size:22px;line-height:1}
+.sbtn .l{font-size:13px;line-height:1.2;text-align:center;color:var(--muted)}
+.sbtn:hover{transform:translateY(-1px)}
+.sbtn:active{transform:translateY(1px)}
+.sbtn:focus-visible,.ghost:focus-visible,.chip:focus-visible,.primary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sbtn[data-v="0"] .n{color:var(--s0)} .sbtn[data-v="1"] .n{color:var(--s1)} .sbtn[data-v="2"] .n{color:var(--s2)} .sbtn[data-v="3"] .n{color:var(--s3)}
+.sbtn[data-v="0"]:hover,.sbtn[data-v="0"].on{background:var(--s0-bg);border-color:var(--s0)}
+.sbtn[data-v="1"]:hover,.sbtn[data-v="1"].on{background:var(--s1-bg);border-color:var(--s1)}
+.sbtn[data-v="2"]:hover,.sbtn[data-v="2"].on{background:var(--s2-bg);border-color:var(--s2)}
+.sbtn[data-v="3"]:hover,.sbtn[data-v="3"].on{background:var(--s3-bg);border-color:var(--s3)}
+.nav{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:12px 20px;border-top:1px dashed var(--line)}
+.ghost{font:inherit;font-size:14px;cursor:pointer;background:none;border:1px solid transparent;color:var(--muted);padding:6px 10px;border-radius:4px}
+.ghost:hover{color:var(--ink);border-color:var(--line)}
+.ghost:disabled{opacity:.4;cursor:default}
+.primary{font:inherit;font-weight:600;font-size:14px;cursor:pointer;background:var(--accent);color:var(--paper);border:0;padding:8px 14px;border-radius:4px}
+.hint{font-size:13px;color:var(--muted);margin:0}
+kbd{font-family:var(--f-mono);font-size:12px;border:1px solid var(--line);border-bottom-width:2px;border-radius:3px;padding:0 4px;background:var(--paper)}
+
+section h2{font-family:var(--f-display);font-stretch:85%;font-weight:700;font-size:24px;margin:0 0 4px}
+section .sub{color:var(--muted);font-size:14px;margin:0 0 14px}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.rank{display:grid;grid-template-columns:28px minmax(70px,auto) 1fr auto;align-items:center;gap:10px 12px}
+.rank .pos{font-family:var(--f-mono);color:var(--muted);font-size:14px}
+.rank .name{font-family:var(--f-display);font-weight:700;font-size:18px;font-stretch:90%}
+.rank .track{height:14px;background:var(--bg);border-radius:2px;overflow:hidden;min-width:0}
+.rank .track i{display:block;height:100%;background:var(--muted);opacity:.55}
+.rank .first .track i,.rank .track i.top{background:var(--accent);opacity:1}
+.rank .pct{font-family:var(--f-mono);font-weight:700;font-variant-numeric:tabular-nums;font-size:15px;text-align:right}
+.rank .meta{grid-column:2/-1;margin-top:-6px;font-size:12px;color:var(--muted);font-family:var(--f-mono)}
+.verdict{font-family:var(--f-display);font-stretch:80%;font-weight:800;font-size:30px;line-height:1.1;margin:0}
+.verdict span{color:var(--accent)}
+.warn{font-size:14px;background:var(--s1-bg);color:var(--ink);border-left:3px solid var(--s1);padding:8px 12px;margin:0}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:460px}
+th,td{padding:7px 8px;text-align:center;border-bottom:1px solid var(--line)}
+th{font-family:var(--f-mono);font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--muted)}
+td:first-child,th:first-child{text-align:left}
+td.c{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:13px;cursor:pointer;border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:4px 10px;border-radius:999px}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.list li{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.list li:last-child{border-bottom:0}
+.list .sc{font-family:var(--f-mono);font-weight:700;font-size:18px;text-align:center;border-radius:4px;padding:2px 0;height:fit-content}
+.list .sc.v0{background:var(--s0-bg);color:var(--s0)} .list .sc.v1{background:var(--s1-bg);color:var(--s1)}
+.list .sc.v2{background:var(--s2-bg);color:var(--s2)} .list .sc.v3{background:var(--s3-bg);color:var(--s3)}
+.list .sc.vn{color:var(--muted);border:1px dashed var(--line)}
+.list .tx{min-width:0}
+.list .pt{font-family:var(--f-mono);font-size:12px;color:var(--muted);letter-spacing:.04em}
+.list .pt b{color:var(--accent)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+footer{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+footer p{margin:0}
+footer a{color:var(--accent)}
+@media (max-width:520px){
+  .scores{grid-template-columns:repeat(2,1fr)}
+  .ballot-body{padding:22px 16px 18px;min-height:130px}
+  .scores,.nav{padding-left:16px;padding-right:16px}
+  .ballot-top{padding:12px 16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body style="margin:0">
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Elecciones generales · 29 de noviembre de 2026</div>
+    <h1>Tu voto a ciegas</h1>
+    <p class="lede">Puntúa cada propuesta sin saber de quién es. Al final verás con qué partido coincides más. Hay unas 25 medidas de cada uno de los cuatro programas, mezcladas al azar.</p>
+  </header>
+
+  <div class="progress" aria-label="Progreso">
+    <div class="bar"><i id="barFill"></i></div>
+    <div class="count" id="countTxt">0 / 0</div>
+  </div>
+
+  <div id="voteView" class="ballot">
+    <div class="ballot-top"><span>Propuesta <b id="numTxt">1</b> de <span id="totTxt">0</span></span><span id="temaTxt">Tema</span></div>
+    <div class="ballot-body"><p class="prop" id="propTxt"></p></div>
+    <div class="scores" role="group" aria-label="Tu puntuación">
+      <button class="sbtn" data-v="0" id="b0"><span class="n">0</span><span class="l">En contra</span></button>
+      <button class="sbtn" data-v="1" id="b1"><span class="n">1</span><span class="l">Poco convencido</span></button>
+      <button class="sbtn" data-v="2" id="b2"><span class="n">2</span><span class="l">A favor</span></button>
+      <button class="sbtn" data-v="3" id="b3"><span class="n">3</span><span class="l">A favor y muy necesaria</span></button>
+    </div>
+    <div class="nav">
+      <div class="row">
+        <button class="ghost" id="prevBtn">← Anterior</button>
+        <button class="ghost" id="skipBtn">Saltar</button>
+      </div>
+      <button class="ghost" id="toResBtn">Ver resultados →</button>
+    </div>
+  </div>
+  <p class="hint" id="kbdHint">Con teclado: <kbd>0</kbd>–<kbd>3</kbd> para puntuar, <kbd>←</kbd> anterior, <kbd>S</kbd> saltar. Tu progreso se guarda en este navegador.</p>
+
+  <div id="resView" hidden>
+    <section>
+      <div class="panel">
+        <p class="verdict" id="verdict"></p>
+        <p class="warn" id="warnTxt" hidden></p>
+        <div class="rank" id="rankBox"></div>
+        <p class="hint">% de afinidad = puntos que has dado a sus propuestas ÷ máximo posible (3 × las que has valorado). Las saltadas no cuentan.</p>
+        <div class="row">
+          <button class="primary" id="backVoteBtn">Seguir puntuando</button>
+          <button class="ghost" id="resetBtn">Empezar de nuevo</button>
+          <span id="resetConfirm" hidden class="row"><span class="hint">¿Borrar todas tus puntuaciones?</span><button class="ghost" id="resetYes">Sí, borrar</button><button class="ghost" id="resetNo">Cancelar</button></span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Por temas</h2>
+      <p class="sub">Media de tus puntuaciones (0 a 3) en cada tema. «–» si ese partido no tiene propuestas de ese tema aquí o no las has valorado.</p>
+      <div class="panel tbl-wrap"><table id="topicTbl"></table></div>
+    </section>
+
+    <section>
+      <h2>Tus respuestas, destapadas</h2>
+      <p class="sub">Cada propuesta con su partido y la nota que le diste.</p>
+      <div class="panel">
+        <div class="chips" id="chips"></div>
+        <ul class="list" id="ansList"></ul>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <p>Selección de medidas a partir de resúmenes de prensa de los programas del PP (249 medidas), PSOE, Vox (115 medidas) y Frente Amplio (más de 1.000 medidas) para el 29-N. Redactadas en lenguaje neutro para no delatar al partido. Es una muestra, no el programa completo: conviene leer los originales antes de decidir.</p>
+    <p>Fuentes: <a href="https://theobjective.com/espana/2026-11-16/programa-electoral-pp-29n/" target="_blank" rel="noopener">The Objective (PP)</a> · <a href="https://theobjective.com/espana/politica/2026-11-16/programa-psoe-29-n-viviendas-publicas/" target="_blank" rel="noopener">The Objective (PSOE)</a> · <a href="https://www.elplural.com/politica/espana/programa-electoral-psoe-elecciones-generales-2026-vivienda-impuestos-pensiones-principales-propuestas_804421102" target="_blank" rel="noopener">El Plural (PSOE)</a> · <a href="https://www.democrata.es/en/general-elections-spain/vox-s-electoral-platform-for-29n-consult-its-main-proposals-and-the-full-document/" target="_blank" rel="noopener">Demócrata (Vox)</a> · <a href="https://theobjective.com/espana/2026-11-16/programa-frente-amplio-29n/" target="_blank" rel="noopener">The Objective (Frente Amplio)</a></p>
+  </footer>
+</div>
+
+<script>
+const PARTIES=["PP","PSOE","Vox","Frente Amplio"];
+const RAW={
+"PP":[
+["Vivienda","Construir un millón de viviendas usando suelo público y privado."],
+["Vivienda","Derogar la ley de vivienda vigente, incluidas las zonas tensionadas y el índice de precios del alquiler."],
+["Vivienda","Bajar el IVA de la compra de la primera vivienda del 10 % al 4 % para menores de 40 años."],
+["Vivienda","Resolver las licencias de obra nueva y de rehabilitación en un máximo de 3 meses."],
+["Fiscalidad","Que quien cobre el salario mínimo no pague IRPF."],
+["Fiscalidad","Rebaja progresiva del IRPF durante los 4 primeros años de declaración para trabajadores y autónomos de 18 a 35 años."],
+["Empleo","Que los nuevos autónomos no paguen cuota a la Seguridad Social durante su primer año."],
+["Fiscalidad","Que los autónomos que facturen menos de 85.000 € al año no tengan que cobrar ni declarar IVA."],
+["Fiscalidad","Quitar el IVA a los alimentos básicos mientras dure la crisis de inflación."],
+["Energía y clima","Bajar los impuestos de la luz y sustituir el bono eléctrico y el bono térmico por una única tarifa social."],
+["Inmigración","Identificar en un máximo de 7 días a quien entre de forma irregular y acelerar su devolución."],
+["Inmigración","Prohibir por ley las regularizaciones masivas de inmigrantes."],
+["Inmigración","Fijar cupos anuales de trabajadores extranjeros según lo que necesite el mercado laboral."],
+["Inmigración","Ligar el acceso a ayudas y recursos públicos al grado de vinculación de cada persona con España."],
+["Sanidad","Incorporar al menos 4.500 médicos más a atención primaria."],
+["Educación","Sustituir la ley educativa actual por un nuevo marco y crear una prueba de acceso a la universidad común en toda España."],
+["Educación","Garantizar que las familias puedan elegir libremente el centro educativo."],
+["Transporte e infraestructuras","Plan de 300.000 millones de euros en 15 años, con participación privada, para autovías, alta velocidad, Cercanías, agua y energía."],
+["Instituciones y justicia","Auditar todo el gasto público en los primeros 100 días de gobierno y reducir ministerios, altos cargos y asesores."],
+["Instituciones y justicia","Derogar la Ley de Amnistía."],
+["Instituciones y justicia","Prohibir los indultos a condenados por corrupción, terrorismo y otros delitos graves."],
+["Seguridad y defensa","Recuperar en el Código Penal los delitos de sedición y de convocatoria de referéndum ilegal."],
+["Seguridad y defensa","Endurecer las penas a los multirreincidentes y ampliar los casos de prisión permanente revisable."],
+["Energía y clima","Mantener abiertas las centrales nucleares y anular el calendario de cierre."],
+["Modelo territorial","Nuevo sistema de financiación autonómica pactado entre todas las comunidades, sin que ninguna salga del sistema común."]
+],
+"PSOE":[
+["Vivienda","Crear un parque estatal de 100.000 viviendas públicas gestionado por una empresa pública."],
+["Vivienda","Invertir cada año el equivalente al 1 % del PIB en vivienda asequible."],
+["Vivienda","Impuesto progresivo a grandes propietarios y fondos con viviendas vacías, turísticas o alquiladas a precios abusivos."],
+["Vivienda","Impuesto sobre los solares residenciales que se mantengan sin construir."],
+["Vivienda","Congelar temporalmente los alquileres que superen el índice de referencia en zonas tensionadas."],
+["Vivienda","Seguro público contra impagos para que los jóvenes puedan acceder al alquiler."],
+["Vivienda","Reconocer en la Constitución la vivienda como derecho fundamental."],
+["Empleo","Completar la reducción de la jornada a 37,5 horas semanales e impulsar las 35 horas a través de los convenios."],
+["Empleo","Blindar por ley que el salario mínimo esté siempre por encima del 60 % del salario medio."],
+["Empleo","Que la indemnización por despido improcedente tenga en cuenta los daños reales causados al trabajador."],
+["Empleo","Aprobar un Estatuto del Becario."],
+["Fiscalidad","Subir de forma progresiva hasta el 35 % el impuesto sobre rentas del ahorro (dividendos, plusvalías) por encima de 300.000 €."],
+["Fiscalidad","Duplicar el impuesto sobre transacciones financieras, del 0,2 % al 0,4 %."],
+["Fiscalidad","Más impuestos a las empresas cotizadas cuyo primer ejecutivo cobre más de 100 veces el salario mediano de su plantilla."],
+["Familia","Que las familias cobren la deducción por hijos aunque no lleguen a pagar IRPF."],
+["Educación","Matrícula gratis en el primer curso de grado en universidades públicas y becas Erasmus de 1.000 a 1.500 € al mes según renta."],
+["Sanidad","Incluir el dentista básico en la sanidad pública y dar hasta 200 € al año por persona para tratamientos dentales."],
+["Sanidad","Primera consulta de psicología gratuita en un máximo de 30 días."],
+["Familia","Una cuenta de 1.000 € por cada recién nacido que podrá usar al cumplir 18 años."],
+["Igualdad y derechos","Blindar el derecho al aborto en la Constitución."],
+["Pensiones","Blindar en la Constitución el sistema público de pensiones y su revalorización con el IPC."],
+["Instituciones y justicia","Bajar la edad para votar a los 16 años."],
+["Instituciones y justicia","Suprimir el aforamiento de los políticos para delitos que no tengan que ver con su cargo."],
+["Inmigración","Plan de integración de inmigrantes de 500 millones de euros y más vías legales y seguras para migrar."],
+["Seguridad y defensa","Rechazar el objetivo de gastar el 5 % del PIB en defensa."]
+],
+"Vox":[
+["Inmigración","Impedir que quien entró en España de forma irregular pueda regularizarse, tampoco por arraigo."],
+["Inmigración","Endurecer los requisitos para obtener la nacionalidad española."],
+["Inmigración","Plan para que vuelvan a su país los extranjeros que no aportan económicamente o viven de subsidios."],
+["Inmigración","Repatriar a las personas en situación irregular y expulsar a los extranjeros que cometan delitos graves o reiterados."],
+["Inmigración","Devolver a los menores extranjeros no acompañados con sus familias o a instituciones de su país de origen."],
+["Ayudas sociales","Dar preferencia a los españoles en vivienda pública, plazas de guardería, becas de comedor y ayudas sociales."],
+["Ayudas sociales","Reservar el Ingreso Mínimo Vital a ciudadanos españoles."],
+["Fiscalidad","Poner un impuesto al dinero que se envía al extranjero (remesas)."],
+["Sanidad","Excluir de la sanidad pública ordinaria a los extranjeros sin residencia legal, salvo urgencias graves."],
+["Sanidad","Plan nacional contra las listas de espera que incluya colaboración con la sanidad privada."],
+["Vivienda","IVA del 0 % en la compra de la primera vivienda nueva, sin impuesto de transmisiones en la de segunda mano, y recuperar la deducción por vivienda habitual."],
+["Vivienda","Desalojar a los okupas en menos de 24 horas y endurecer el Código Penal contra la okupación."],
+["Vivienda","Prohibir alquilar vivienda a personas en situación irregular."],
+["Fiscalidad","Bajar los tipos general y reducido del IVA y el impuesto de sociedades."],
+["Empleo","Cuota cero para los autónomos que ingresen menos del salario mínimo, y cuota progresiva a partir de ahí."],
+["Educación","Prohibir los móviles en clase."],
+["Educación","Recuperar las reválidas, una prueba de acceso a la universidad única y garantizar la enseñanza en español en toda España."],
+["Educación","Eliminar el programa de lengua árabe y cultura marroquí y los menús halal en los comedores escolares."],
+["Energía y clima","Eliminar las restricciones a los coches de combustión, los impuestos al CO₂ y las zonas de bajas emisiones."],
+["Instituciones y justicia","Reducir poco a poco las subvenciones a partidos, sindicatos, patronal y ONG."],
+["Modelo territorial","Ilegalizar los partidos y organizaciones que atenten contra la unidad de España."],
+["Campo y agua","Rechazar el acuerdo comercial entre la UE y Mercosur."],
+["Campo y agua","Plan Nacional del Agua basado en interconectar las cuencas de los ríos."],
+["Familia","Ampliar las ventajas de familia numerosa a todas las familias desde el primer hijo, y que el Estado pague las cotizaciones de quien se dedique a cuidar a sus hijos."],
+["Igualdad y derechos","Derogar las leyes de género actuales y sustituirlas por normas que protejan a todas las víctimas de violencia."],
+["Igualdad y derechos","Proteger la vida «desde la concepción hasta la muerte natural», con objeción de conciencia y más cuidados paliativos."]
+],
+"Frente Amplio":[
+["Vivienda","Parque público de 1,5 millones de viviendas en alquiler asequible, invirtiendo el 1 % del PIB al año durante 12 años."],
+["Vivienda","Limitar el alquiler al 25 % de los ingresos netos medios de los hogares de cada zona."],
+["Vivienda","Expropiar progresivamente viviendas a los grandes propietarios corporativos, empezando por los que tienen más de 1.000."],
+["Vivienda","Prohibir que empresas con ánimo de lucro compren vivienda para especular."],
+["Vivienda","Retirar progresivamente las licencias de pisos turísticos en zonas tensionadas."],
+["Vivienda","Reconocer legalmente a los sindicatos de inquilinos y regular la huelga de alquileres."],
+["Empleo","Jornada máxima de 32 horas semanales sin bajar el sueldo, con un primer paso inmediato a 37,5."],
+["Empleo","Que los trabajadores estén en los consejos de administración y que las empresas repartan obligatoriamente parte de sus beneficios con la plantilla."],
+["Fiscalidad","Que ninguna empresa pague menos de un 20 % efectivo en el impuesto de sociedades."],
+["Fiscalidad","Crear un impuesto específico a los ultrarricos."],
+["Fiscalidad","Bajar el IRPF a los salarios más bajos y el IVA de los productos básicos y la energía."],
+["Pensiones","Volver a la jubilación ordinaria a los 65 años."],
+["Pensiones","Que ninguna pensión mínima esté por debajo del salario mínimo."],
+["Pensiones","Jubilación a los 60 en trabajos penosos como construcción, limpieza, ayuda a domicilio o pesca."],
+["Sanidad","Sanidad 100 % pública y de gestión directa, con al menos el 8 % del PIB e incluyendo dentista, vista, oído y salud mental."],
+["Educación","Educación pública gratuita desde los 0 años hasta la universidad, con el 7 % del PIB."],
+["Familia","Prestación universal de 200 € al mes por cada hijo menor de edad."],
+["Energía y clima","Crear una comercializadora pública de electricidad y recuperar el control público de las redes de distribución."],
+["Energía y clima","Tres horas diarias de electricidad gratis para los hogares, en las horas de más producción solar."],
+["Economía","Crear una banca pública estatal."],
+["Energía y clima","Dedicar el 3,5 % del PIB al año a la transición ecológica, con un fondo soberano de energías renovables."],
+["Transporte e infraestructuras","Un abono único de transporte público válido en toda España."],
+["Inmigración","Ley integral contra el racismo y procedimientos estables para regularizar a inmigrantes."],
+["Modelo territorial","Avanzar hacia una república federal y plurinacional."],
+["Igualdad y derechos","Desarrollar la ley trans y ampliar los derechos de las personas no binarias."]
+]};
+const PROPS=[];PARTIES.forEach(p=>RAW[p].forEach(([t,x],i)=>PROPS.push({id:p.slice(0,2).toUpperCase()+i,p,t,x})));
+const BYID=Object.fromEntries(PROPS.map(o=>[o.id,o]));
+const N=PROPS.length;
+const KEY="voto-a-ciegas-29n-v1";
+
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&Array.isArray(s.order)&&s.order.length===N&&s.order.every(id=>BYID[id]))return s}catch(e){}return null}
+let S=load()||{order:shuffle(PROPS.map(o=>o.id)),scores:{},pos:0,view:"vote"};
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+const $=id=>document.getElementById(id);
+function rated(){return Object.keys(S.scores).length}
+function firstUnrated(){return S.order.findIndex(id=>S.scores[id]===undefined)}
+
+function renderProgress(){const r=rated();$("barFill").style.width=(r/N*100)+"%";$("countTxt").textContent=r+" / "+N+" valoradas"}
+function renderVote(){
+  const id=S.order[S.pos],o=BYID[id];
+  $("numTxt").textContent=S.pos+1;$("totTxt").textContent=N;
+  $("temaTxt").textContent=o.t;$("propTxt").textContent=o.x;
+  for(let v=0;v<4;v++)$("b"+v).classList.toggle("on",S.scores[id]===v);
+  $("prevBtn").disabled=S.pos===0;
+}
+function show(view){S.view=view;$("voteView").hidden=view!=="vote";$("kbdHint").hidden=view!=="vote";$("resView").hidden=view!=="res";if(view==="res")renderResults();else renderVote();renderProgress();save()}
+
+function rate(v){const id=S.order[S.pos];S.scores[id]=v;advance()}
+function advance(){
+  if(S.pos<N-1){S.pos++;show("vote")}
+  else{const f=firstUnrated();if(f>=0&&f!==S.pos){S.pos=f;show("vote")}else show("res")}
+}
+
+function stats(){
+  const st={};PARTIES.forEach(p=>st[p]={n:0,sum:0,tot:RAW[p].length});
+  for(const id in S.scores){const o=BYID[id];st[o.p].n++;st[o.p].sum+=S.scores[id]}
+  PARTIES.forEach(p=>{const s=st[p];s.pct=s.n?s.sum/(3*s.n):null;s.avg=s.n?s.sum/s.n:null});
+  return st;
+}
+let filter="Todos";
+function renderResults(){
+  const st=stats(),r=rated();
+  const order=PARTIES.slice().sort((a,b)=>(st[b].pct??-1)-(st[a].pct??-1));
+  const best=order[0];
+  if(!r){$("verdict").textContent="Aún no has puntuado ninguna propuesta.";}
+  else{const top=order.filter(p=>st[p].pct!==null&&Math.abs(st[p].pct-st[best].pct)<1e-9);
+    $("verdict").innerHTML=top.length>1?"Empate entre <span>"+top.join(" y ")+"</span>":"Coincides más con <span>"+best+"</span>";}
+  const w=$("warnTxt");const left=N-r;
+  if(r&&left>0){w.hidden=false;w.textContent=r<40?`Solo llevas ${r} de ${N}. Con tan pocas el resultado todavía es poco fiable.`:`Te faltan ${left} propuestas por valorar o saltadas.`}else w.hidden=true;
+  const box=$("rankBox");box.innerHTML="";
+  order.forEach((p,i)=>{const s=st[p];const pct=s.pct===null?null:Math.round(s.pct*100);
+    const isTop=r&&s.pct!==null&&Math.abs(s.pct-st[best].pct)<1e-9;
+    box.insertAdjacentHTML("beforeend",`<span class="pos">${i+1}</span><span class="name">${p}</span><span class="track"><i class="${isTop?"top":""}" style="width:${pct??0}%"></i></span><span class="pct">${pct===null?"–":pct+" %"}</span><span class="meta">media ${s.avg===null?"–":s.avg.toFixed(2)} sobre 3 · ${s.n} de ${s.tot} valoradas</span>`)});
+  // tabla por temas
+  const temas=[...new Set(PROPS.map(o=>o.t))].sort((a,b)=>a.localeCompare(b,"es"));
+  let h="<thead><tr><th>Tema</th>"+PARTIES.map(p=>`<th>${p}</th>`).join("")+"</tr></thead><tbody>";
+  temas.forEach(t=>{h+=`<tr><td>${t}</td>`;
+    PARTIES.forEach(p=>{const ids=PROPS.filter(o=>o.p===p&&o.t===t&&S.scores[o.id]!==undefined);
+      if(!ids.length){h+=`<td class="c" style="color:var(--muted)">–</td>`;return}
+      const m=ids.reduce((a,o)=>a+S.scores[o.id],0)/ids.length;const k=Math.min(3,Math.max(0,Math.round(m)));
+      h+=`<td class="c" style="background:var(--s${k}-bg);color:var(--s${k})">${m.toFixed(1)}</td>`});
+    h+="</tr>"});
+  $("topicTbl").innerHTML=h+"</tbody>";
+  // chips + lista
+  const ch=$("chips");ch.innerHTML="";
+  ["Todos",...PARTIES].forEach(p=>{const b=document.createElement("button");b.className="chip"+(filter===p?" on":"");b.textContent=p;b.onclick=()=>{filter=p;renderResults()};ch.appendChild(b)});
+  const list=$("ansList");list.innerHTML="";
+  S.order.map(id=>BYID[id]).filter(o=>filter==="Todos"||o.p===filter).forEach(o=>{const v=S.scores[o.id];
+    const li=document.createElement("li");
+    li.innerHTML=`<span class="sc ${v===undefined?"vn":"v"+v}">${v===undefined?"·":v}</span><div class="tx"><div class="pt"><b>${o.p}</b> · ${o.t}</div><div></div></div>`;
+    li.querySelector(".tx div:last-child").textContent=o.x;list.appendChild(li)});
+}
+
+for(let v=0;v<4;v++)$("b"+v).onclick=()=>rate(v);
+$("prevBtn").onclick=()=>{if(S.pos>0){S.pos--;show("vote")}};
+$("skipBtn").onclick=()=>{const id=S.order[S.pos];delete S.scores[id];if(S.pos<N-1){S.pos++;show("vote")}else show("res")};
+$("toResBtn").onclick=()=>show("res");
+$("backVoteBtn").onclick=()=>{const f=firstUnrated();if(f>=0)S.pos=f;show("vote")};
+$("resetBtn").onclick=()=>{$("resetConfirm").hidden=false;$("resetBtn").hidden=true};
+$("resetNo").onclick=()=>{$("resetConfirm").hidden=true;$("resetBtn").hidden=false};
+$("resetYes").onclick=()=>{S={order:shuffle(PROPS.map(o=>o.id)),scores:{},pos:0,view:"vote"};filter="Todos";$("resetConfirm").hidden=true;$("resetBtn").hidden=false;show("vote");window.scrollTo(0,0)};
+document.addEventListener("keydown",e=>{if(S.view!=="vote"||e.metaKey||e.ctrlKey||e.altKey)return;
+  if(/^[0-3]$/.test(e.key)){rate(+e.key);e.preventDefault()}
+  else if(e.key==="ArrowLeft"){$("prevBtn").click()}
+  else if(e.key==="s"||e.key==="S"){$("skipBtn").click()}});
+show(S.view==="res"?"res":"vote");
+</script>
+</body>
+</html>
