@@ -120,7 +120,7 @@ footer a{color:var(--accent)}
   <header>
     <div class="eyebrow">Elecciones generales · 29 de noviembre de 2026</div>
     <h1>Tu voto a ciegas</h1>
-    <p class="lede">Puntúa cada propuesta sin saber de quién es. Al final verás con qué partido coincides más. Hay unas 26 medidas de cada uno de los cuatro programas oficiales, mezcladas al azar.</p>
+    <p class="lede">Puntúa cada propuesta sin saber de quién es. Al final verás con qué partido coincides más. Hay 25 medidas de cada uno de los cuatro programas oficiales, mezcladas al azar.</p>
   </header>
 
   <div class="progress" aria-label="Progreso">
@@ -180,7 +180,7 @@ footer a{color:var(--accent)}
 
   <footer>
     <p>Medidas seleccionadas de los programas electorales oficiales para las elecciones generales del 29 de noviembre de 2026: PP («Reconstrucción nacional»), PSOE («La fuerza de seguir avanzando»), Vox («Es sentido común») y Frente Amplio. Al destapar los resultados, cada propuesta indica la página del PDF del programa de donde sale.</p>
-    <p>Las propuestas están redactadas en lenguaje neutro, sin siglas ni expresiones propias de cada partido. Es una selección de unas 26 medidas por partido repartidas por temas, no el programa completo: conviene leer los originales antes de decidir.</p>
+    <p>Las propuestas están redactadas en lenguaje neutro, sin siglas ni expresiones propias de cada partido. Es una selección de 25 medidas por partido repartidas por temas, no el programa completo: conviene leer los originales antes de decidir.</p>
   </footer>
 </div>
 
@@ -204,7 +204,6 @@ const RAW={
 ["Inmigración","Prohibir por ley las regularizaciones masivas de inmigrantes y que el arraigo sea una vía excepcional.",19],
 ["Inmigración","Exigir un compromiso de integración (aprender español, conocer la Constitución) para renovar la residencia, y prohibir el burka y el niqab en espacios públicos.",19],
 ["Instituciones y justicia","Derogar la Ley de Amnistía y prohibir los indultos a condenados por corrupción, terrorismo o delitos contra la integridad territorial.",25],
-["Instituciones y justicia","Que el fiscal general tenga un mandato único de cinco años y no cese con el Gobierno que lo nombró.",26],
 ["Seguridad y defensa","Recuperar en el Código Penal los delitos de sedición y de convocatoria de referéndum ilegal.",15],
 ["Seguridad y defensa","Ampliar la prisión permanente revisable a quien oculte el cadáver de su víctima y a los violadores reincidentes.",17],
 ["Energía y clima","Eliminar el calendario de cierre de las centrales nucleares y alargar su vida útil.",54],
@@ -220,7 +219,6 @@ const RAW={
 ["Vivienda","Dedicar cada año el equivalente al 1 % del PIB a garantizar el acceso a la vivienda.",27],
 ["Vivienda","Crear un parque estatal de 100.000 viviendas públicas, construidas o compradas, para venta o alquiler a precio asequible.",28],
 ["Vivienda","Impuesto progresivo a las viviendas de grandes propietarios y fondos que estén vacías, sean turísticas o se alquilen a precios abusivos.",31],
-["Vivienda","Impuesto sobre los solares residenciales que se mantengan sin construir.",30],
 ["Vivienda","Congelar temporalmente los alquileres que superen los índices de referencia en las zonas tensionadas.",30],
 ["Empleo","Completar la reducción de la jornada a 37,5 horas semanales sin perder salario y avanzar hacia las 35 horas mediante convenios.",41],
 ["Empleo","Blindar por ley que el salario mínimo esté siempre por encima del 60 % del salario medio.",37],
@@ -259,13 +257,11 @@ const RAW={
 ["Empleo","Cuota cero para los autónomos que ingresen menos del salario mínimo, y cuota progresiva desde 50 € a partir de ahí.",9],
 ["Empleo","Derogar la reforma laboral aprobada por el Gobierno actual.",13],
 ["Energía y clima","Revertir la prohibición de los motores de combustión y los impuestos al CO₂, y suprimir las zonas de bajas emisiones.",11],
-["Energía y clima","Estudiar con urgencia nuevas centrales nucleares junto a las actuales.",12],
 ["Instituciones y justicia","Que los propios jueces elijan a los 12 vocales judiciales del Consejo General del Poder Judicial.",55],
 ["Instituciones y justicia","Reducir hasta eliminar las subvenciones a partidos, sindicatos, patronales y ONG.",29],
 ["Modelo territorial","Ilegalizar los partidos y organizaciones que atenten contra la unidad de España.",56],
 ["Educación","Limitar el número de alumnos por aula de otras culturas o con poco dominio del español, con aulas de nivelación previas.",42],
 ["Educación","Eliminar los menús halal en los comedores escolares y el programa de Lengua Árabe y Cultura Marroquí.",42],
-["Campo y agua","Rechazar el acuerdo comercial entre la UE y Mercosur.",33],
 ["Campo y agua","Plan Nacional del Agua que interconecte todas las cuencas de los ríos.",61],
 ["Familia y cuidados","Extender todas las ventajas de familia numerosa a todas las familias desde el primer hijo, y que el Estado pague las cotizaciones de quien se dedique a cuidar a sus hijos.",51],
 ["Igualdad y derechos","Derogar las leyes de violencia de género y sustituirlas por normas que protejan a todas las víctimas.",30],
@@ -277,10 +273,8 @@ const RAW={
 ["Vivienda","Expropiar progresivamente viviendas a los grandes propietarios corporativos: primero a los de más de 1.000, luego más de 700 y después más de 50.",10],
 ["Vivienda","Prohibir que empresas con ánimo de lucro (fondos, socimis, bancos) compren vivienda salvo para alquiler asequible regulado.",11],
 ["Vivienda","Extinguir en un máximo de tres años todas las licencias de pisos turísticos en edificios residenciales de zonas tensionadas.",12],
-["Vivienda","Reconocer legalmente a los sindicatos de inquilinos y regular la huelga de alquileres ante abusos graves.",13],
 ["Vivienda","Topar el alquiler en zonas tensionadas al 25 % de la renta media del barrio, con una rebaja extra del 30 % en ciudades de más de 200.000 habitantes.",13],
 ["Vivienda","Impuesto del 10 % sobre el valor de los pisos de empresas y de particulares a partir del cuarto si superan 800.000 €, salvo los alquilados a precio asequible.",18],
-["Vivienda","Recargo del 200 % en el impuesto de compra de una segunda vivienda y del 1.000 % a partir de la tercera.",19],
 ["Familia y cuidados","Prestación universal de 200 € al mes por cada menor de 18 años, sin depender de los ingresos.",21],
 ["Educación","Comedor escolar gratuito para todo el alumnado de Infantil y Primaria en centros públicos.",22],
 ["Educación","Educación pública gratuita desde los 0 años hasta la universidad, con el 7 % del PIB y menos alumnos por aula.",7],
@@ -304,7 +298,7 @@ const RAW={
 const PROPS=[];PARTIES.forEach(p=>RAW[p].forEach(([t,x,pg],i)=>PROPS.push({id:p.slice(0,2).toUpperCase()+i,p,t,x,pg})));
 const BYID=Object.fromEntries(PROPS.map(o=>[o.id,o]));
 const N=PROPS.length;
-const KEY="voto-a-ciegas-29n-v2";
+const KEY="voto-a-ciegas-29n-v3";
 
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&Array.isArray(s.order)&&s.order.length===N&&s.order.every(id=>BYID[id]))return s}catch(e){}return null}
